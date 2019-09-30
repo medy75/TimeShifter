@@ -85,4 +85,32 @@ public class TimeShifterTest {
     String year2years = timeShifter.insertDate("<year + 2 years # yyyy>", DateTime.now());
     Assert.assertEquals(DateTime.now().plusYears(2).toString("yyyy"), year2years);
   }
+
+  @Test
+  public void testTodayPlus1hour(){
+    DateTime now = DateTime.now();
+    String today1hour = timeShifter.insertDate("<now + 1 hour # yy-MM-dd-hh>", now);
+    Assert.assertEquals(now.plusHours(1).toString("yy-MM-dd-hh"), today1hour);
+  }
+
+  @Test
+  public void testTodayMinus3hours(){
+    DateTime now = DateTime.now();
+    String todayM3hours = timeShifter.insertDate("<now - 3 hours # yy-MM-dd-hh>", now);
+    Assert.assertEquals(now.minusHours(3).toString("yy-MM-dd-hh"), todayM3hours);
+  }
+
+  @Test
+  public void testTodayPlus1second(){
+    DateTime now = DateTime.now();
+    String today1second = timeShifter.insertDate("<today + 1 seconds # dd-hh:mm:ss>", now);
+    Assert.assertEquals(now.plusSeconds(1).toString("dd-hh:mm:ss"), today1second);
+  }
+
+  @Test
+  public void testTodayPlus10seconds(){
+    DateTime now = DateTime.now();
+    String today10seconds = timeShifter.insertDate("<today + 10 seconds # dd-hh:mm:ss>", now);
+    Assert.assertEquals(now.plusSeconds(10).toString("dd-hh:mm:ss"), today10seconds);
+  }
 }

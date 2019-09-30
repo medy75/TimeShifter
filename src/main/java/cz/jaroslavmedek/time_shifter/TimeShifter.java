@@ -143,6 +143,18 @@ public class TimeShifter {
   private Period getPeriod(int value, String period, DateTime actualDate) {
     Period p;
     switch (period.toLowerCase()) {
+      case "second":
+      case "seconds":
+        p = Period.seconds(value);
+        break;
+      case "minute":
+      case "minutes":
+        p = Period.minutes(value);
+        break;
+      case "hour":
+      case "hours":
+        p = Period.hours(value);
+        break;
       case "day":
       case "days":
         p = Period.days(value);
