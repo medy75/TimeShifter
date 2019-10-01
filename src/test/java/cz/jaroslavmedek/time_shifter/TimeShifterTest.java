@@ -87,6 +87,12 @@ public class TimeShifterTest {
   }
 
   @Test
+  public void testYearPlus3yearsWithDefaultDate(){
+    String year3years = timeShifter.insertDate("<year + 3 years # yyyy>");
+    Assert.assertEquals(DateTime.now().plusYears(3).toString("yyyy"), year3years);
+  }
+
+  @Test
   public void testTodayPlus1hour(){
     DateTime now = DateTime.now();
     String today1hour = timeShifter.insertDate("<now + 1 hour # yy-MM-dd-hh>", now);
