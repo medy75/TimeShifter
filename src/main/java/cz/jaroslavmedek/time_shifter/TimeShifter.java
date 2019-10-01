@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 
-public class TimeShifter implements ITimeShifter{
+public class TimeShifter implements ITimeShifter {
 
   private static final Logger LOGGER = LogManager.getLogger(TimeShifter.class);
 
@@ -27,11 +27,11 @@ public class TimeShifter implements ITimeShifter{
   public String insertDate(String inputText, DateTime actualDate) {
     Pattern formatPattern = Pattern.compile(DATE_PATTERN);
     Matcher formatMatcher = formatPattern.matcher(inputText);
-    if (formatMatcher.find()) {
-      return replaceDateStamp(inputText, actualDate);
-    } else {
-      return inputText;
+    while (formatMatcher.find()) {
+      inputText = replaceDateStamp(inputText, actualDate);
+      formatMatcher = formatPattern.matcher(inputText);
     }
+    return inputText;
   }
 
   private String replaceDateStamp(String inputText, DateTime actualDate) {

@@ -27,6 +27,18 @@ public class TimeShifterTest {
   }
 
   @Test
+  public void testTextAtEndYear(){
+    String year = timeShifter.insertDate("Upcoming year will be <now + 1 year # yyyy>", DateTime.now());
+    Assert.assertEquals("Upcoming year will be " + DateTime.now().plusYears(1).toString("yyyy"), year);
+  }
+
+  @Test
+  public void testTextInMiddleYear(){
+    String middle = timeShifter.insertDate("Loan was activated on <today - 10 days # dd/MM/yyyy> and first repayment will be <today + 4 days # dd/MM/yyyy>.", DateTime.now());
+    Assert.assertEquals("Loan was activated on " + DateTime.now().minusDays(10).toString("dd/MM/yyyy")+ " and first repayment will be " + DateTime.now().plusDays(4).toString("dd/MM/yyyy") + ".", middle);
+  }
+
+  @Test
   public void testEndOfMonth() {
     String eom = timeShifter.insertDate("<endOfMonth # MM/dd/yyyy>", DateTime.now());
     Assert.assertEquals(DateTime.now().dayOfMonth().withMaximumValue().toString("MM/dd/yyyy"), eom);
