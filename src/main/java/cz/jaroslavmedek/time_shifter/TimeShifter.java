@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 
-public class TimeShifter {
+public class TimeShifter implements ITimeShifter{
 
   private static final Logger LOGGER = LogManager.getLogger(TimeShifter.class);
 
@@ -19,12 +19,6 @@ public class TimeShifter {
   private static final String DATE_PATTERN = "<(today|now|week|month|year|tomorrow|yesterday|nextWeek|endOfMonth|nextMonth|startOfMonth|nextYear)((\\s?[\\+-]\\s?\\d+\\s?\\w+\\s?)*)(\\s?[#-]\\s?.*)?>";
 
   private String dateFormat = "yyyy-MM-dd";
-
-  public static void main(String[] args) {
-    TimeShifter tf = new TimeShifter();
-    System.out.println(tf.insertDate("<today>"));
-  }
-
 
   public String insertDate(String inputText) {
     return insertDate(inputText, DateTime.now());
