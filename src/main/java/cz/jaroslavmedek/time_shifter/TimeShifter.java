@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 
-public class TimeShifter implements ITimeShifter {
+public class TimeShifter {
 
   private static final Logger LOGGER = LogManager.getLogger(TimeShifter.class);
 
@@ -18,13 +18,16 @@ public class TimeShifter implements ITimeShifter {
   private static final String FORMAT_DELIMITER = "#";
   private static final String DATE_PATTERN = "<(today|now|week|month|year|tomorrow|yesterday|nextWeek|endOfMonth|nextMonth|startOfMonth|nextYear)((\\s?[\\+-]\\s?\\d+\\s?\\w+\\s?)*)(\\s?[#-]\\s?.*)?>";
 
-  private String dateFormat = "yyyy-MM-dd";
+  private static String dateFormat = "yyyy-MM-dd";
 
-  public String insertDate(String inputText) {
+  private TimeShifter() {
+  }
+
+  public static String insertDate(String inputText) {
     return insertDate(inputText, DateTime.now());
   }
 
-  public String insertDate(String inputText, DateTime actualDate) {
+  public static String insertDate(String inputText, DateTime actualDate) {
     Pattern formatPattern = Pattern.compile(DATE_PATTERN);
     Matcher formatMatcher = formatPattern.matcher(inputText);
     while (formatMatcher.find()) {
@@ -34,7 +37,7 @@ public class TimeShifter implements ITimeShifter {
     return inputText;
   }
 
-  private String replaceDateStamp(String inputText, DateTime actualDate) {
+  private static String replaceDateStamp(String inputText, DateTime actualDate) {
     LOGGER.debug("Replace date (actual: {}) in string: {}", actualDate.toString(), inputText);
     String withoutParentheses = inputText.substring(inputText.indexOf('<') + 1, inputText.indexOf('>'));
     String replaceable = inputText.substring(inputText.indexOf('<'), inputText.indexOf('>') + 1);
@@ -52,11 +55,11 @@ public class TimeShifter implements ITimeShifter {
     return inputText.replace(replaceable, modifiedDate.toString(getFormatter(splitByFormatter)));
   }
 
-  private boolean isEndOfMonth(String[] dateValues) {
+  private static boolean isEndOfMonth(String[] dateValues) {
     return "endofmonth".equalsIgnoreCase(dateValues[0].trim());
   }
 
-  private boolean isCountInDays(String[] dateValues) {
+  private static boolean isCountInDays(String[] dateValues) {
     for (int i = 1; i < dateValues.length; i++) {
       if (dateValues[i].trim().contains("day")) {
         return true;
@@ -65,7 +68,7 @@ public class TimeShifter implements ITimeShifter {
     return false;
   }
 
-  private DateTime calcDate(String[] dateValuesParam, DateTime actualDateParam) {
+  private static DateTime calcDate(String[] dateValuesParam, DateTime actualDateParam) {
     DateTime actualDate = actualDateParam;
     actualDate = replaceFirstVal(dateValuesParam[0], actualDate);
     String[] dateValues = Arrays.copyOfRange(dateValuesParam, 1, dateValuesParam.length);
@@ -82,7 +85,7 @@ public class TimeShifter implements ITimeShifter {
     return actualDate;
   }
 
-  private int getCount(String value) {
+  private static int getCount(String value) {
     Pattern pattern = Pattern.compile("\\d+");
     Matcher matcher = pattern.matcher(value);
     if (matcher.find()) {
@@ -91,7 +94,7 @@ public class TimeShifter implements ITimeShifter {
     return 0;
   }
 
-  private String getPeriodName(String value) {
+  private static String getPeriodName(String value) {
     Pattern pattern = Pattern.compile("[a-zA-Z]+");
     Matcher matcher = pattern.matcher(value);
     if (matcher.find()) {
@@ -100,11 +103,11 @@ public class TimeShifter implements ITimeShifter {
     return "day";
   }
 
-  private String getFormatter(String[] splittedValues) {
+  private static String getFormatter(String[] splittedValues) {
     return splittedValues.length > 1 ? splittedValues[1].trim() : dateFormat;
   }
 
-  private DateTime replaceFirstVal(String value, DateTime actualDate) {
+  private static DateTime replaceFirstVal(String value, DateTime actualDate) {
     DateTime date;
     switch (value.trim().toLowerCase()) {
       case "yesterday":
@@ -134,7 +137,7 @@ public class TimeShifter implements ITimeShifter {
     return date;
   }
 
-  private Period getPeriod(int value, String period, DateTime actualDate) {
+  private static Period getPeriod(int value, String period, DateTime actualDate) {
     Period p;
     switch (period.toLowerCase()) {
       case "second":
@@ -175,7 +178,7 @@ public class TimeShifter implements ITimeShifter {
     return p;
   }
 
-  private Period calcWorkDays(int valueParam, DateTime actualDateParam) {
+  private static Period calcWorkDays(int valueParam, DateTime actualDateParam) {
     int value = valueParam;
     LOGGER.debug("Calc working days - wanted working days: {} from date: {}", value, actualDateParam.toString());
     DateTime actualDate = actualDateParam;
@@ -191,11 +194,11 @@ public class TimeShifter implements ITimeShifter {
     return Period.days(days);
   }
 
-  public String getDateFormat() {
+  public static String getDateFormat() {
     return dateFormat;
   }
 
-  public void setDateFormat(String dateFormat) {
-    this.dateFormat = dateFormat;
+  public static void setDateFormat(String dateFormat) {
+    TimeShifter.dateFormat = dateFormat;
   }
 }
