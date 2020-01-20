@@ -1,13 +1,14 @@
 package cz.jaroslavmedek.time_shifter;
 
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.Period;
 
 public class TimeShifter {
 
@@ -24,10 +25,10 @@ public class TimeShifter {
   }
 
   public static String insertDate(String inputText) {
-    return insertDate(inputText, DateTime.now());
+    return insertDate(inputText, LocalDateTime.now());
   }
 
-  public static String insertDate(String inputText, DateTime actualDate) {
+  public static String insertDate(String inputText, LocalDateTime actualDate) {
     Pattern formatPattern = Pattern.compile(DATE_PATTERN);
     Matcher formatMatcher = formatPattern.matcher(inputText);
     while (formatMatcher.find()) {
@@ -37,22 +38,23 @@ public class TimeShifter {
     return inputText;
   }
 
-  private static String replaceDateStamp(String inputText, DateTime actualDate) {
-    LOGGER.debug("Replace date (actual: {}) in string: {}", actualDate.toString(), inputText);
+  private static String replaceDateStamp(String inputText, LocalDateTime actualDate) {
+    LOGGER.debug("Replace date (actual: {}) in string: {}", actualDate, inputText);
     String withoutParentheses = inputText.substring(inputText.indexOf('<') + 1, inputText.indexOf('>'));
     String replaceable = inputText.substring(inputText.indexOf('<'), inputText.indexOf('>') + 1);
 
     String[] splitByFormatter = withoutParentheses.split(FORMAT_DELIMITER);
     String[] dateValues = splitByFormatter[0].split(DATE_WITH_DELIMITER);
 
-    DateTime modifiedDate;
+    LocalDateTime modifiedDate;
     if (isEndOfMonth(dateValues) && !isCountInDays(dateValues)) {
-      modifiedDate = calcDate(dateValues, actualDate).dayOfMonth().withMaximumValue();
+      LocalDateTime calculatedDate = calcDate(dateValues, actualDate);
+      modifiedDate = calculatedDate.withDayOfMonth(calculatedDate.toLocalDate().lengthOfMonth());
     } else {
       modifiedDate = calcDate(dateValues, actualDate);
     }
-    LOGGER.debug("Modified date (without format): {}", modifiedDate.toString());
-    return inputText.replace(replaceable, modifiedDate.toString(getFormatter(splitByFormatter)));
+    LOGGER.debug("Modified date (without format): {}", modifiedDate);
+    return inputText.replace(replaceable, modifiedDate.format(getFormatter(getFormatString(splitByFormatter))));
   }
 
   private static boolean isEndOfMonth(String[] dateValues) {
@@ -68,8 +70,8 @@ public class TimeShifter {
     return false;
   }
 
-  private static DateTime calcDate(String[] dateValuesParam, DateTime actualDateParam) {
-    DateTime actualDate = actualDateParam;
+  private static LocalDateTime calcDate(String[] dateValuesParam, LocalDateTime actualDateParam) {
+    LocalDateTime actualDate = actualDateParam;
     actualDate = replaceFirstVal(dateValuesParam[0], actualDate);
     String[] dateValues = Arrays.copyOfRange(dateValuesParam, 1, dateValuesParam.length);
     for (String value : dateValues) {
@@ -103,12 +105,10 @@ public class TimeShifter {
     return "day";
   }
 
-  private static String getFormatter(String[] splittedValues) {
-    return splittedValues.length > 1 ? splittedValues[1].trim() : dateFormat;
-  }
 
-  private static DateTime replaceFirstVal(String value, DateTime actualDate) {
-    DateTime date;
+
+  private static LocalDateTime replaceFirstVal(String value, LocalDateTime actualDate) {
+    LocalDateTime date;
     switch (value.trim().toLowerCase()) {
       case "yesterday":
         date = actualDate.minusDays(1);
@@ -120,7 +120,7 @@ public class TimeShifter {
         date = actualDate.plusDays(DAYS_IN_WEEK);
         break;
       case "endofmonth":
-        date = actualDate.dayOfMonth().withMaximumValue();
+        date = actualDate.withDayOfMonth(actualDate.toLocalDate().lengthOfMonth());
         break;
       case "nextmonth":
         date = actualDate.plusMonths(1);
@@ -137,65 +137,73 @@ public class TimeShifter {
     return date;
   }
 
-  private static Period getPeriod(int value, String period, DateTime actualDate) {
+  private static Period getPeriod(int value, String period, LocalDateTime actualDate) {
     Period p;
     switch (period.toLowerCase()) {
-      case "second":
-      case "seconds":
-        p = Period.seconds(value);
-        break;
-      case "minute":
-      case "minutes":
-        p = Period.minutes(value);
-        break;
-      case "hour":
-      case "hours":
-        p = Period.hours(value);
-        break;
+//      case "second":
+//      case "seconds":
+//        p = Period.seconds(value);
+//        break;
+//      case "minute":
+//      case "minutes":
+//        p = Period.minutes(value);
+//        break;
+//      case "hour":
+//      case "hours":
+//        p = Period.hours(value);
+//        break;
       case "day":
       case "days":
-        p = Period.days(value);
+        p = Period.ofDays(value);
         break;
       case "week":
       case "weeks":
-        p = Period.days(value * DAYS_IN_WEEK);
+        p = Period.ofDays(value * DAYS_IN_WEEK);
         break;
       case "month":
       case "months":
-        p = Period.months(value);
+        p = Period.ofMonths(value);
         break;
       case "year":
       case "years":
-        p = Period.years(value);
+        p = Period.ofYears(value);
         break;
       case "workday":
       case "workdays":
         p = calcWorkDays(value, actualDate);
         break;
       default:
-        p = Period.days(value);
+        p = Period.ofDays(value);
     }
     return p;
   }
 
-  private static Period calcWorkDays(int valueParam, DateTime actualDateParam) {
+  private static Period calcWorkDays(int valueParam, LocalDateTime actualDateParam) {
     int value = valueParam;
-    LOGGER.debug("Calc working days - wanted working days: {} from date: {}", value, actualDateParam.toString());
-    DateTime actualDate = actualDateParam;
+    LOGGER.debug("Calc working days - wanted working days: {} from date: {}", value, actualDateParam);
+    LocalDateTime actualDate = actualDateParam;
     int days = 0;
     for (int i = 1; i <= value; i++) {
       days++;
       actualDate = actualDate.plusDays(1);
-      if (actualDate.dayOfWeek().get() == 6 || actualDate.dayOfWeek().get() == 7) {
+      if (actualDate.getDayOfWeek().getValue() == 6 || actualDate.getDayOfWeek().getValue() == 7) {
         value++;
       }
     }
     LOGGER.debug("Number of calculated days (period): {}", days);
-    return Period.days(days);
+    return Period.ofDays(days);
+  }
+
+  private static String getFormatString(String[] splittedValues) {
+    return splittedValues.length > 1 ? splittedValues[1].trim() : dateFormat;
   }
 
   public static String getDateFormat() {
     return dateFormat;
+  }
+
+  public static DateTimeFormatter getFormatter(String format){
+    return DateTimeFormatter.ofPattern(format);
   }
 
   public static void setDateFormat(String dateFormat) {

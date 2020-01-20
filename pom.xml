@@ -18,11 +18,11 @@
 
   <dependencies>
     <!-- https://mvnrepository.com/artifact/joda-time/joda-time -->
-    <dependency>
-      <groupId>joda-time</groupId>
-      <artifactId>joda-time</artifactId>
-      <version>${joda.version}</version>
-    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>joda-time</groupId>-->
+<!--      <artifactId>joda-time</artifactId>-->
+<!--      <version>${joda.version}</version>-->
+<!--    </dependency>-->
     <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api -->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
